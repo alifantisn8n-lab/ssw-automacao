@@ -1,0 +1,109 @@
+<html><head>
+<title>Menu Principal :: SSW Sistema de Transportes</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="/ssw.css?version=6" type="text/css" charset="iso-8859-1">
+<script language="JavaScript" src="/scripts/ssw_010622.js?version=3" charset="iso-8859-1"></script>
+<script type="text/javascript"><!--
+var obj;var objfocus;var objmais;var help_file;var webTitle;
+function fl(){
+menu_help.A0002="Disponibiliza, de forma geral, todo o processamento ligado ao cliente.";
+menu_help.A0004="Trata das questões: clientes, vendedores, tabelas de fretes e resultados de fretes.";
+menu_help.A0024="Efetuam-se cotações de fretes e pagamento de comissões para cotadores.";
+menu_help.A0005="Efetuam-se as coletas, as pesagens e cubagens e identificam-se os volumes.";
+menu_help.A0007="Troca-se arquivos de dados com clientes e outras entidades.";
+menu_help.A0006="Emissões de CTRCs e demais documentos fiscais nas unidades expedidoras da carga. ";
+menu_help.A0008="Transfere a carga de uma unidade para outra.";
+menu_help.A0025="Cadastram-se ocorrências em CTRCs e gravam-se instruções visando a solução das pendências.";
+menu_help.A0009="Funções relacionadas a entrega da mercadoria na unidade destinatária do CTRC.";
+menu_help.A0011="Unidades da transportadora operadas por empresas terceirizadas.";
+menu_help.A0028="Disponibiliza funções específicas de embarcador, más de forma integrada com as demais fuções do SSW. ";
+menu_help.A0026="Apoiam os processos da transportadora de forma indireta.";
+menu_help.A0012="Processos de faturamento e cobrança dos fretes.";
+menu_help.A0013="Orçamento, provisão e contas a pagar.";
+menu_help.A0014="Junção dos fluxos de entradas e saídas de dinheiro em contas correntes, bancárias ou não.";
+menu_help.A0016="Gestão dos veículos próprios, motoristas, manutenção, consumo e pneus. Este módulo Frota para funcionar, precisa ser liberado pelo SSW.";
+menu_help.A0017="Serviço de armazenagem por cliente com controle de estoque e emissão de documentos fiscais. ";
+menu_help.A0022="Controle de estoque de materiais para uso interno da transportadora.";
+menu_help.A0021="Controle do imobilizado da transportadora, com foco fiscal e contábil.";
+menu_help.A0023="Processo de compras visando o abastecimento da transportadora.";
+menu_help.A0018="Atendimento fiscal: ICMS, ISS, IR, PIS/COFINS, IBS/CBS e retenções. ";
+menu_help.A0800="Processamento automático da contabilidade integrado aos demais módulos.";
+menu_help.A0027="Cadastramento e configurações visando a ativação de funcionalidades no SSW.";
+menu_help.A0020="Parametrização geral do sistema, executável apenas pelo usuário máster.";
+menu_help.A0015="Fornece em telas ou relatórios todas as informações necessárias à gestão da transportadora.";document.getElementById("link_slack").href = "#";document.getElementById("link_slack").onclick = function () {return false;};document.getElementById("link_slack").readOnly = true;document.getElementById("link_slack").className = "nodata2";document.getElementById("link_slack").style.visibility = "hidden";
+}
+//--></script>
+</head>
+<body onload="fl();mostraAvisoInadimp(5);loadAvisos();msgs(0,0);statusSuporte();">
+<form name="frm" id="frm" method="POST" action="/bin/menu01" autocomplete="off">
+<script language="JavaScript" src="/scripts/menu01_171225.js?v=1.0.0" charset="iso-8859-1"></script>
+<div class="datar" id="divss" style="text-align:right; left:840px;top:48px;height:16px;width:160px;"><span class="textor"><b>SUPORTE</b></span>&nbsp;<a class="baselnkr" href="#" onfocus="obj=this" onclick="return false;" style="position: relative;" id="lnkss"><b>chat</b></a>&nbsp;/&nbsp;<a class="baselnkr" href="#" onfocus="obj=this" onclick="return false;" style="position: relative;" id="lnkssvideo"><b>video</b></a></div>
+<div style="left:64px; top: 64px; white-space: nowrap;width: 8px; overflow: visible;"><a id="1" onfocus="obj=this;" style="right:0px;top:0px;" class="baselnk" href="#" onclick="ajaxEnvia('FIL', 1);return false;" accesskey="&amp;">Unidade:</a>
+</div><input name="f2" id="2" value="MTZ" onchange="atualizaQuadroIndicadores(this.value);" maxlength="3" style="left: 80px; top: 64px; width: 32px;"><div class="texto" style="left:128px;top:64px;width:40px;">Opção:</div>
+<input name="f3" num="1" id="3" value="" onfocus="this.value='';SetEnd(this)" onchange="doOption();" maxlength="3" style="left: 176px; top: 64px; width: 32px; background: rgb(255, 255, 196);"><input name="f4" id="4" value="" placeholder="Digite parte do nome da opção" lkp="1" tb="mnu" maxlength="100" style="left: 216px; top: 64px; width: 360px; background: white;" autocomplete="ON"><a id="5" onfocus="obj=this;" style="left:584px; top:64px;" class="baselnk" href="#" onclick="ajaxEnvia('FAV', 1);return false;" accesskey="&amp;">Minhas&nbsp;opções</a><a id="link_slack" onfocus="obj=this;" class="nodata2" href="#" onclick="ajaxEnvia('', 1, 'ssw3504');return false;" accesskey="&amp;" style="position: absolute; left: 680px; text-align: left; top: 64px; visibility: hidden;">Ação&nbsp;corretiva&nbsp;DEV</a>
+<div class="datar" id="div_ajudavc" style="text-align:right; left:880px;top:64px;height:16px;width:120px;"></div>
+<div class="texto" style="left:216px;top:80px;width:782px;color:rgb(0,50,150);"><b>Avisos&nbsp;da&nbsp;R A ALMEIDA TECNOLOGIA EM TRANEPORTES</b></div>
+<div class="avisoini" id="aviso_emp" style="text-align:left; left:216px;top:96px;height:240px;width:782px;"></div>
+<div class="texto" style="left:216px;top:352px;width:782px;color:rgb(0,50,150);"><b>Avisos&nbsp;do&nbsp;SSW</b></div>
+<div class="aviso" id="aviso_ssw" style="overflow:hidden;text-align:left; left:216px;top:368px;height:240px;width:782px;"><iframe onload="addIframe('%3Cdiv%20style%3D%22font%2Dsize%3A7%2E0pt%3Bfont%2Dfamily%3AVerdana%3Bcolor%3Ablue%3B%22%3E%3Clabel%3E%3Cb%3ESUPORTE%3C%2Fb%3E%20%2D%20Fones%20%2824h%29%3A%3C%2Flabel%3E%26nbsp%3B%3Cfont%20color%3Dred%3E%2841%293336%2D0877%2C%20%2841%293122%2D2450%3C%2Ffont%3E%26nbsp%3B%3Clabel%3E%2D%20Teams%3A%3C%2Flabel%3E%26nbsp%3B%3Ca%20style%3D%22color%3Ared%22%20href%3D%22https%3A%2F%2Fteams%2Elive%2Ecom%2Fl%2Fcommunity%2FFAAgchB9zy1NMZqpwI%22%20target%3D%22_blank%22%3EContatos%3C%2Fa%3E%26nbsp%3B%3Clabel%3E%2D%20E%2Dmail%3A%3C%2Flabel%3E%26nbsp%3B%3Ca%20style%3D%22color%3Ared%22%20href%3D%22mailto%3Asuporte%40ssw%2Einf%2Ebr%22%3Esuporte%40ssw%2Einf%2Ebr%3C%2Fa%3E%2C%26nbsp%3B%3Ca%20style%3D%22color%3Ared%22%20href%3D%22mailto%3Asuporte%40ssw%2Etec%2Ebr%22%3Esuporte%40ssw%2Etec%2Ebr%3C%2Fa%3E%26nbsp%3B%3C%2Fdiv%3E')" id="ssw" class="frame" frameborder="no" load="" src="/ajuda/avisos.htm?dummy=241112"></iframe></div>
+<img style="position:absolute; top:615px;left:0px; width:1000px;height:1px; background-color:#1951B9;">
+<div style="position: absolute;width:1000px;left:0px;text-align:center; top:624px;word-wrap:break-word"><a class="baselnk" target="_blank" style="position: relative;" href="https://ssw.inf.br/2/rastreamento_danfe">www.ssw.inf.br</a>&nbsp;|&nbsp;
+<a class="baselnk" accesskey="&amp;" style="position: relative;" href="#" onclick="ajaxEnvia('', 1, 'ssw2393');return false;">Portal LGPD</a>&nbsp;|&nbsp;
+<a class="baselnk" accesskey="&amp;" style="position: relative;" href="http://www.cte.fazenda.gov.br/portal/consultaRecaptcha.aspx?tipoConsulta=completa&amp;tipoConteudo=mCK/KoCqru0=" target="_blank">Portal CT-e </a>&nbsp;|&nbsp;
+<a class="baselnk" accesskey="&amp;" style="position: relative;" href="https://dfe-portal.svrs.rs.gov.br/MDFE/Consulta" target="_blank">Portal MDF-e</a>&nbsp;|&nbsp;
+<a class="baselnk" accesskey="&amp;" style="position: relative;" href="http://www.nfe.fazenda.gov.br/portal/consultaRecaptcha.aspx?tipoConsulta=completa&amp;tipoConteudo=XbSeqxE8pl8=" target="_blank">Portal NF-e </a><br><br></div><div style="color:DarkBlue;position:absolute;vertical-align:top;width:1000px;left:0px;text-align:center; top:640px;"><a class="baselnk" href="https://static.ssw.inf.br/download/sswpc_setup.exe?v=260324112812" style="position:relative">Configurar seu micro</a>
+&nbsp;|&nbsp;<a class="baselnk" onclick="ajaxEnvia('', 1, 'ssw0422?act=S');return false;" href="#" accesskey="&amp;" style="position: relative;">Trocar senha</a>&nbsp;|&nbsp;<a class="baselnk" onclick="ajaxEnvia('', 1, 'ssw3365');return false;" href="#" accesskey="&amp;" style="position: relative;">Estou de férias ou ausente</a>&nbsp;|&nbsp;<a class="baselnk" target="_blank" onclick="jscript:showhelp2(1, '/ajuda/ajude_a_melhorar.htm');return false;" href="#" accesskey="&amp;" style="position: relative;">Ajude a melhorar o SSW</a>
+<br><br></div>&nbsp;-&nbsp;<div style="position: absolute;width:150px;left:8px;top:96px;overflow:visible;text-align:left;border-bottom:0px solid rgb(216,216,255);border-right:0px solid rgb(166,166,255);border-left:0px solid rgb(216,216,255);border-top:0px solid rgb(216,216,255);"><a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0002" onclick="subMenu01Click(this, 2);return false">Cliente</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0004" onclick="subMenu01Click(this, 4);return false">Comercial</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0024" onclick="subMenu01Click(this, 24);return false">Cotação</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0005" onclick="subMenu01Click(this, 5);return false">Coleta</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0007" onclick="subMenu01Click(this, 7);return false">EDI</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0006" onclick="subMenu01Click(this, 6);return false">Expedição</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0008" onclick="subMenu01Click(this, 8);return false">Transferência</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0025" onclick="subMenu01Click(this, 25);return false">Ocorrências e Instruções</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0009" onclick="subMenu01Click(this, 9);return false">Entrega</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0011" onclick="subMenu01Click(this, 11);return false">Parcerias</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0028" onclick="subMenu01Click(this, 28);return false">Embarcador</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0026" onclick="subMenu01Click(this, 26);return false">Retaguarda</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0012" onclick="subMenu01Click(this, 12);return false">Contas a Receber</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0013" onclick="subMenu01Click(this, 13);return false">Contas a Pagar</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0014" onclick="subMenu01Click(this, 14);return false">Financeiro</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0016" onclick="subMenu01Click(this, 16);return false">Frota</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0017" onclick="subMenu01Click(this, 17);return false">Logística</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0022" onclick="subMenu01Click(this, 22);return false">Almoxarifado</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0021" onclick="subMenu01Click(this, 21);return false">Imobilizado</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0023" onclick="subMenu01Click(this, 23);return false">Compras</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0018" onclick="subMenu01Click(this, 18);return false">Fiscal</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0800" onclick="subMenu01Click(this, 800);return false">Contabilidade</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0027" onclick="subMenu01Click(this, 27);return false">Implantação</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0020" onclick="subMenu01Click(this, 20);return false">Sistema</a>
+<a class="mainMenuLevel1" href="#" onmouseenter="ShowHelpIconNew(this, 1)" onmouseleave="HideHelpIcon(this)" help="A0015" onclick="subMenu01Click(this, 15);return false">Gestão</a>
+<br><p style="height:16px;"><a class="baselnk" name="ssw0569" tag="99999" "="" href="#" onclick="showhelp2(1,'/ajuda/visao_geral.htm');return false;" style="position:relative;">Visão&nbsp;Geral</a>&nbsp;/&nbsp;<a class="baselnk" name="ssw0569" tag="99999" "="" href="#" onclick="showhelp2(1,'/ajuda/cursos_001.htm');return false;" style="position:relative;">Treinamento</a>&nbsp;/&nbsp;<a class="baselnk" name="ssw0569" tag="99999" "="" href="#" onclick="showhelp2(1,'/ajuda/cursos.htm');return false;" style="position:relative;">Cursos</a></p><p style="height:16px;" class="texto" ;="">Monitorar:&nbsp;<a class="baselnk" name="ssw1102" tag="117" href="#" onclick="findme2(this);return" false;"="" style="position:relative;">Web service</a>&nbsp;/&nbsp;<a class="baselnk" name="ssw0869" tag="602" href="#" onclick="findme2(this);return" false;"="" style="position:relative;">EDI</a></p><p style="height:16px;" class="texto"><a class="baselnk" name="ssw0082" tag="56" href="#" onclick="findme2(this);return false;" style="position:relative;">Relatórios Gerenciais</a>&nbsp;/&nbsp;<a class="baselnk" name="ssw1440" tag="156" href="#" onclick="findme2(this);return false;" style="position:relative;">Fila</a></p></div><div id="mq" style="position:absolute;text-align:left;left:216px;top:48px;height:16px;width:648px;border-bottom:0px;"></div><input type="hidden" name="act" style="">
+<input type="hidden" name="menu01" id="menu01" value="1" style="">
+<script id="mainscript" type="text/javascript"><!--
+objfocus = "3";
+objmais   = "1";
+help_file = "menu01.htm";
+--></script>
+<div style="left:0px;top:640px;">&nbsp;</div>
+</form>
+<div class="cabecalho">&nbsp;
+<div id="infodiv" class="texto3" style="left:8px;bottom:8px;overflow:visible;"><span style="color: rgb(245,245,255)">Domínio: <b>RAA</b></span><b>&nbsp;rafael&nbsp;13</b></div>
+<div id="telaprog" class="texto3" style="right:8px;bottom:24px;color:silver;overflow:visible">menu01.03&nbsp;24/03/26&nbsp;11:28</div>
+<div id="cablnk" style="right:8px;bottom:8px;"><a class="cablnk" href="#" onclick="ajaxEnvia('COR',0);return false;">Cor</a>&nbsp;&nbsp;&nbsp;<a class="cablnk" href="#" onclick="window.print(); return false;">Imprimir</a>&nbsp;&nbsp;&nbsp;<a class="cablnk" href="#" onclick="envia3('', 1, 'ssw1243');return false;">E-mails/fones</a>&nbsp;&nbsp;&nbsp;<a class="cablnk" href="#" onclick="envia3('', 1, 'ssw0187'); return false;">Correio</a>&nbsp;&nbsp;&nbsp;<a class="cablnk" href="#" onclick="ajaxEnvia('', 0, 'ssw0423?act=P');return false;">SAIR</a>&nbsp;&nbsp;&nbsp;<a class="cablnk" href="#" onclick="showhelp(1, '/ajuda/' + help_file);return false;"><big><b> ? </b></big></a></div>
+<div class="tituloprog" id="tituloprog"><span class="titulo">Menu Principal</span></div>
+</div>
+<div id="errorpanel" style="text-align: left; overflow: visible; left: 0px; top: 0px; height: 768px; width: 1366px; background: white; opacity: 0.5; visibility: hidden; z-index: 1147483607;">
+</div>
+<div id="errormsg" style="text-align: left; overflow: visible; left: 300px; top: 208px; height: 152px; width: 400px; visibility: hidden; z-index: 1147483648;" class=""><div id="scontentbar" style="text-align:right;"><label style="left:16px;top:6px;color:white;" class="texto">Aviso</label><a href="#" onclick="ccx();showmsgonclick();return false;" style="position:relative;font-size:18px;color:white;text-decoration:none;" class="texto">&nbsp;<b>×</b>&nbsp;</a></div><div class="texto" id="errormsglabel" style="color:red;left:16px;top:32px;text-align:left;overflow:visible"><b><input type="hidden" name="web_body" id="web_body" value="" style="">
+
+&nbsp;
+</b></div></div>
+<div id="procimg" style="position: absolute; left: 400px; top: 208px; width: 200px; height: 100px; visibility: hidden; overflow: visible; background: white; z-index: 1147483649;">
+<img src="/images/ajax-loader2.gif" style="position:absolute;left:92px;top:32px;"><br>
+<label class="texto" style="color:red;font-size:8pt;top:56px;left:72px;">Aguarde ...</label>
+<div id="id_progressoSSW" class="progressoSSW"></div>
+</div>
+
+<iframe name="dframe" id="dframe" style="position:absolute;left:10px;top:50px;height:50px;width:50px;visibility:hidden;"></iframe>
+</body></html>

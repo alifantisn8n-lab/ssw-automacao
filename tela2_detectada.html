@@ -1,0 +1,61 @@
+<html><head>
+<title>002 - Cotação de Fretes :: SSW Sistema de Transportes</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="/ssw.css?version=6" type="text/css" charset="iso-8859-1">
+<script language="JavaScript" src="/scripts/ssw_010622.js?version=3" charset="iso-8859-1"></script>
+<script type="text/javascript"><!--
+var obj;var objfocus;var objmais;var help_file;var webTitle;
+function fl(){}
+//--></script>
+</head>
+<body onload="fl();">
+<form name="frm" id="frm" method="POST" action="/bin/ssw1601" autocomplete="off">
+<script language="JavaScript" src="/scripts/ssw1601_150126.js?v=240320261130" charset="iso-8859-1"></script><script language="JavaScript" src="/scripts/lookup_311025.js?v=31.10.25" charset="iso-8859-1"></script><script language="JavaScript" src="/scripts/email_061025.js" charset="iso-8859-1"></script>
+<div class="texto" style="left:64px;top:64px;width:168px;">Incluir&nbsp;nova&nbsp;cotação:</div>
+<a id="1" onfocus="obj=this;" style="left:240px; top:64px;" class="imglnk" href="#" onclick="ajaxEnvia('NEW', 1);return false;" accesskey="&amp;">&nbsp;►&nbsp;</a><a href="#" id="2" onfocus="obj=this;" style="left:264px; top:64px;" class="imglnk" onclick="btnClose();return false;" accesskey="&amp;">&nbsp;×&nbsp;</a><div class="texto" style="left:64px;top:96px;width:168px;color:red;"><b>Cotações&nbsp;já&nbsp;cadastradas:</b></div>
+<div class="texto" style="left:64px;top:112px;width:168px;">Ver&nbsp;cotação&nbsp;número:</div>
+<input name="f3" num="1" exc="1" id="3" value="" maxlength="7" style="left: 240px; top: 112px; width: 64px;"><a id="4" onfocus="obj=this;" style="left:312px; top:112px;" class="imglnk" href="#" onclick="ajaxEnvia('NUM', 1);return false;" accesskey="&amp;">&nbsp;►&nbsp;</a><a href="#" id="5" onfocus="obj=this;" style="left:336px; top:112px;text-align:left;" class="imglnk" onclick="btnClose();return false;" accesskey="&amp;">&nbsp;×&nbsp;</a>
+<div class="texto" style="left:64px;top:144px;width:168px;">Listar&nbsp;em:</div>
+<input name="f6" id="6" value="V" maxlength="1" style="left: 240px; top: 144px; width: 16px;"><div class="li" style="text-align:left;left:264px;top:144px;">(V-vídeo,&nbsp;R-relatório,&nbsp;E-excel)</div>
+<div class="texto" style="left:64px;top:160px;width:168px;">Tipo&nbsp;de&nbsp;frete:</div>
+<input name="f7" id="7" value="T" maxlength="1" style="left: 240px; top: 160px; width: 16px;"><div class="li" style="text-align:left;left:264px;top:160px;">(C-CIF,&nbsp;F-FOB,&nbsp;T-todos)</div>
+<div class="texto" style="left:152px;top:176px;width:80px;">Situação:</div>
+<input name="f8" id="8" value="T" maxlength="1" style="left: 240px; top: 176px; width: 16px;"><div class="li" style="text-align:left;left:264px;top:176px;">(C-cotada,&nbsp;D-cancelada,&nbsp;F-contratada,&nbsp;E-CTRC&nbsp;emitido,&nbsp;K-cotada&nbsp;cliente,&nbsp;T-todos)</div>
+<div class="texto" style="left:64px;top:192px;width:168px;">Com&nbsp;OBSERVAÇÕES:</div>
+<input name="f9" id="9" value="N" maxlength="1" style="left: 240px; top: 192px; width: 16px;"><div class="li" style="text-align:left;left:264px;top:192px;">(S&nbsp;/&nbsp;N)</div>
+<div style="left:224px; top: 208px; white-space: nowrap;width: 8px; overflow: visible;"><a id="10" onfocus="obj=this;" class="baselnk" href="#" onclick="findfilial(11);return false;" accesskey="&amp;" style="position: absolute; right:0px;text-align:left; top:0px;">Unidade&nbsp;de&nbsp;inclusão&nbsp;(opc):</a>
+</div><input name="f11" id="11" value="" maxlength="3" style="left: 240px; top: 208px; width: 48px;"><div style="left:224px; top: 224px; white-space: nowrap;width: 8px; overflow: visible;"><a id="12" onfocus="obj=this;" class="baselnk" href="#" onclick="findfilial(13);return false;" accesskey="&amp;" style="position: absolute; right:0px;text-align:left; top:0px;">Unidade&nbsp;de&nbsp;origem&nbsp;(opc):</a>
+</div><input name="f13" id="13" value="" maxlength="3" style="left: 240px; top: 224px; width: 48px;"><div class="texto" style="left:64px;top:240px;width:168px;">Usuário&nbsp;(opc):</div>
+<input name="f14" id="14" value="" maxlength="8" style="left: 240px; top: 240px; width: 120px;"><div style="left:224px; top: 256px; white-space: nowrap;width: 8px; overflow: visible;"><a id="15" onfocus="obj=this;" class="baselnk" href="#" onclick="findcli(16);return false;" accesskey="&amp;" style="position: absolute; right:0px;text-align:left; top:0px;">CNPJ&nbsp;pagador&nbsp;(opc):</a>
+</div><input name="f16" num="1" id="16" value="" maxlength="15" style="left: 240px; top: 256px; width: 120px;"><div class="texto" style="left:64px;top:272px;width:168px;">Período&nbsp;de&nbsp;inclusão:</div>
+<input name="f17" num="1" dt="1" id="17" value="240226" maxlength="6" style="left: 240px; top: 272px; width: 48px;"><div class="texto" style="text-align:left;left:296px;top:272px;">a</div>
+<input name="f18" num="1" dt="1" exc="1" id="18" value="240326" maxlength="6" style="left: 312px; top: 272px; width: 48px;"><a id="19" onfocus="obj=this;" style="left:240px; top:288px;" class="imglnk" href="#" onclick="ajaxEnvia('PES', 1);return false;" accesskey="&amp;">&nbsp;►&nbsp;</a><a href="#" id="20" onfocus="obj=this;" style="left:264px; top:288px;text-align:left;" class="imglnk" onclick="btnClose();return false;" accesskey="&amp;">&nbsp;×&nbsp;</a>
+<input type="hidden" name="act" style="">
+<script id="mainscript" type="text/javascript"><!--
+objfocus = "1";
+objmais   = "1";
+help_file = "ssw1601.htm";
+--></script>
+<div style="left:0px;top:320px;">&nbsp;</div>
+</form>
+<div class="cabecalho">&nbsp;
+<div id="infodiv" class="texto3" style="left:8px;bottom:8px;overflow:visible;"><span style="color: rgb(245,245,255)">Domínio: <b>RAA</b></span><b>&nbsp;MTZ&nbsp;rafael&nbsp;13</b></div>
+<div id="telaprog" class="texto3" style="right:8px;bottom:24px;color:silver;overflow:visible">ssw1601.07&nbsp;24/03/26&nbsp;11:30</div>
+<div id="cablnk" style="right:8px;bottom:8px;"><a class="cablnk" href="#" onclick="window.print(); return false;">Imprimir</a>&nbsp;&nbsp;&nbsp;<a class="cablnk" href="#" onclick="envia3('', 1, 'ssw1243');return false;">E-mails/fones</a>&nbsp;&nbsp;&nbsp;<a class="cablnk" href="#" onclick="envia3('', 1, 'ssw0187'); return false;">Correio</a>&nbsp;&nbsp;&nbsp;<a class="cablnk" href="#" onclick="showhelp(1, '/ajuda/' + help_file);return false;"><big><b> ? </b></big></a></div>
+<div class="tituloprog" id="tituloprog"><a class="tituloprog" href="/bin/menu01">SSW</a>&nbsp;/&nbsp;<a class="tituloprog" href="#" help="A0024" onclick="TitleMenu01Click(this, 24);return false;">Cotação</a> / <a class="tituloprog" href="#" help="B00240001" onclick="TitleMenu02Click(this, 24,1);return false">Cotação</a> / <span class="titulo">002 - Cotação de Fretes</span></div>
+</div>
+<div id="errorpanel" style="text-align:left;overflow:visible;left:0px;top:0px;height:10px;width:10px;background:white;filter:alpha(opacity=50);-moz-opacity:0.5;opacity: 0.5;visibility:hidden;z-index:1147483607;">
+</div>
+<div id="errormsg" style="text-align:left;overflow:visible;left:185px;top:100px;height:120px;width:400px;
+visibility:hidden;z-index:1147483648;">
+&nbsp;
+</div>
+<div id="procimg" style="position:absolute;left:400px;top:208px;width:200px;height:100px;
+visibility:hidden;overflow:visible;background:white;z-index:1147483649;">
+<img src="/images/ajax-loader2.gif" style="position:absolute;left:92px;top:32px;"><br>
+<label class="texto" style="color:red;font-size:8pt;top:56px;left:72px;">Aguarde ...</label>
+<div id="id_progressoSSW" class="progressoSSW"></div>
+</div>
+
+<iframe name="dframe" id="dframe" style="position:absolute;left:10px;top:50px;height:50px;width:50px;visibility:hidden;"></iframe>
+</body></html>
