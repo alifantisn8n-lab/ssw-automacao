@@ -299,7 +299,7 @@ def processar_relatorio_e_enviar(arquivo):
 def main():
     with sync_playwright() as p:
         browser = p.chromium.launch(
-            headless=HEADLESS,
+            headless=True,
             slow_mo=200,
             downloads_path=str(DOWNLOAD_DIR)
         )
