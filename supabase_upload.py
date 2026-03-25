@@ -7,11 +7,30 @@ from supabase import create_client
 
 load_dotenv()
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+def _clean_env(name: str) -> str | None:
+    value = os.getenv(name)
+    if value is None:
+        return None
+    value = value.strip()
+    return value if value else None
+
+
+SUPABASE_URL = _clean_env("SUPABASE_URL")
+SUPABASE_KEY = _clean_env("SUPABASE_KEY")
+
+print("SUPABASE_URL_DEBUG:", repr(SUPABASE_URL), flush=True)
+print(
+    "SUPABASE_KEY_PREFIX:",
+    SUPABASE_KEY[:20] if SUPABASE_KEY else None,
+    flush=True
+)
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    raise ValueError("SUPABASE_URL e SUPABASE_KEY precisam estar no .env")
+    raise ValueError("SUPABASE_URL e SUPABASE_KEY precisam estar definidos")
+
+if not SUPABASE_URL.startswith("https://"):
+    raise ValueError(f"SUPABASE_URL inválida: {SUPABASE_URL!r}")
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -61,10 +80,8 @@ def limpar_colunas(df):
 def tratar_dataframe(df):
     df = limpar_colunas(df)
 
-    # remove colunas inúteis tipo unnamed
     df = df.loc[:, ~df.columns.str.startswith("unnamed")].copy()
 
-    # renomeia cabeçalhos reais do seu relatório para o padrão da tabela
     mapa = {
         "cotacao": "cotacao",
         "data_hora_inclusao": "data_hora_inclusao",
@@ -92,15 +109,12 @@ def tratar_dataframe(df):
     if "cotacao" not in df.columns:
         raise Exception(f"Coluna 'cotacao' não encontrada. Colunas atuais: {list(df.columns)}")
 
-    # remove linhas vazias
     df = df[df["cotacao"].notna()].copy()
 
-    # converte cotacao
     df["cotacao"] = pd.to_numeric(df["cotacao"], errors="coerce")
     df = df[df["cotacao"].notna()].copy()
     df["cotacao"] = df["cotacao"].astype(int)
 
-    # numéricos
     for col in ["proposta_atual", "frete_ntc"]:
         if col in df.columns:
             df[col] = (
@@ -112,7 +126,6 @@ def tratar_dataframe(df):
             )
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
-    # data/hora
     if "data_hora_inclusao" in df.columns:
         df["data_hora_inclusao"] = pd.to_datetime(
             df["data_hora_inclusao"],
@@ -157,7 +170,6 @@ def tratar_dataframe(df):
 def enviar_para_supabase(df):
     df = df.copy()
 
-    # datas para string ISO
     colunas_data = ["data_hora_inclusao", "mes_referencia", "data_extracao", "updated_at"]
     for col in colunas_data:
         if col in df.columns:
@@ -165,7 +177,6 @@ def enviar_para_supabase(df):
                 lambda x: x.isoformat() if pd.notnull(x) and hasattr(x, "isoformat") else None
             )
 
-    # colunas texto: troca NaN por None e força texto quando houver valor
     colunas_texto = [
         "usuario_inclusao",
         "cnpj_cpf_pagador",
@@ -183,13 +194,11 @@ def enviar_para_supabase(df):
         if col in df.columns:
             df[col] = df[col].apply(lambda x: None if pd.isna(x) else str(x).strip())
 
-    # colunas numéricas: troca NaN por None
     colunas_numericas = ["cotacao", "proposta_atual", "frete_ntc"]
     for col in colunas_numericas:
         if col in df.columns:
             df[col] = df[col].apply(lambda x: None if pd.isna(x) else x)
 
-    # conversão final registro a registro para garantir que não sobre nenhum NaN
     registros = []
     for registro in df.to_dict(orient="records"):
         limpo = {}
@@ -200,9 +209,12 @@ def enviar_para_supabase(df):
                 limpo[k] = v
         registros.append(limpo)
 
+    print(f"ENVIANDO {len(registros)} REGISTROS PARA O SUPABASE", flush=True)
+
     tamanho_lote = 500
     for i in range(0, len(registros), tamanho_lote):
         lote = registros[i:i + tamanho_lote]
+        print(f"LOTE {i} ATÉ {i + len(lote)}", flush=True)
         supabase.table("ssw_cotacoes").upsert(
             lote,
             on_conflict="cotacao"
