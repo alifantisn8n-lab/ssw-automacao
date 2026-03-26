@@ -293,7 +293,7 @@ def gerar_relatorio(page):
         print(f"OK - relatório salvo em HTML convertido para CSV: {destino}", flush=True)
         return destino
 
-    # caso 2: ainda pode aparecer arquivo físico
+    # caso 2: apareceu arquivo físico
     antes = arquivos_na_pasta()
     arquivo = esperar_novo_arquivo(antes, timeout=20)
     if arquivo:
@@ -310,7 +310,6 @@ def gerar_relatorio(page):
         print(f"Falha ao salvar debug: {e}", flush=True)
 
     raise Exception("Nenhum relatório foi encontrado após clicar no play final.")
-
 
 def processar_relatorio_e_enviar(arquivo):
     log("Lendo relatório...")
