@@ -3,6 +3,7 @@ import time
 import pandas as pd
 from datetime import datetime
 from pathlib import Path
+from io import StringIO
 
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
@@ -281,17 +282,30 @@ def gerar_relatorio(page):
         print(f"Relatório abriu em HTML: {page.url}", flush=True)
 
         html = page.content()
-        tabelas = pd.read_html(html)
 
-        if not tabelas:
-            raise Exception("A página abriu, mas nenhuma tabela foi encontrada no HTML do relatório.")
+        # salva debug sempre que cair nesse modo
+        with open(DOWNLOAD_DIR / "relatorio_html_debug.html", "w", encoding="utf-8") as f:
+            f.write(html)
+        print("HTML salvo em relatorio_html_debug.html", flush=True)
 
-        df_html = tabelas[0]
-        destino = DOWNLOAD_DIR / f"relatorio_{int(time.time())}.csv"
-        df_html.to_csv(destino, sep=";", index=False, encoding="utf-8-sig")
+        try:
+            tabelas = pd.read_html(StringIO(html))
+            if tabelas:
+                df_html = tabelas[0]
+                destino = DOWNLOAD_DIR / f"relatorio_{int(time.time())}.csv"
+                df_html.to_csv(destino, sep=";", index=False, encoding="utf-8-sig")
+                print(f"OK - relatório salvo em HTML convertido para CSV: {destino}", flush=True)
+                return destino
+        except Exception as e:
+            print(f"Falha ao ler HTML com pandas: {e}", flush=True)
 
-        print(f"OK - relatório salvo em HTML convertido para CSV: {destino}", flush=True)
-        return destino
+        # fallback: tentar pegar texto da página
+        texto = page.locator("body").inner_text()
+        with open(DOWNLOAD_DIR / "relatorio_html_debug.txt", "w", encoding="utf-8") as f:
+            f.write(texto)
+        print("Texto salvo em relatorio_html_debug.txt", flush=True)
+
+        raise Exception("A página do relatório abriu, mas nenhuma tabela HTML foi encontrada.")
 
     # caso 2: apareceu arquivo físico
     antes = arquivos_na_pasta()
