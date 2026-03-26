@@ -32,8 +32,36 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
+def normalizar_nome_coluna(col):
+    return (
+        str(col)
+        .strip()
+        .lower()
+        .replace(" ", "_")
+        .replace("/", "_")
+        .replace("-", "_")
+        .replace("(", "")
+        .replace(")", "")
+        .replace(".", "")
+    )
+
+
+def limpar_colunas(df):
+    df = df.copy()
+    df.columns = [normalizar_nome_coluna(c) for c in df.columns]
+    return df
+
+
 def ler_relatorio(arquivo):
     arquivo = str(arquivo)
+
+    # caso do Railway: relatório virou texto
+    if arquivo.lower().endswith(".txt"):
+        with open(arquivo, "r", encoding="utf-8") as f:
+            linhas = [l.strip() for l in f.readlines() if l.strip()]
+
+        df = pd.DataFrame({"linha": linhas})
+        return df
 
     tentativas = [
         {"sep": ";", "encoding": "utf-8-sig"},
@@ -57,30 +85,19 @@ def ler_relatorio(arquivo):
     raise Exception(f"Não consegui ler o arquivo {arquivo}. Erro: {ultimo_erro}")
 
 
-def normalizar_nome_coluna(col):
-    return (
-        str(col)
-        .strip()
-        .lower()
-        .replace(" ", "_")
-        .replace("/", "_")
-        .replace("-", "_")
-        .replace("(", "")
-        .replace(")", "")
-        .replace(".", "")
-    )
-
-
-def limpar_colunas(df):
-    df = df.copy()
-    df.columns = [normalizar_nome_coluna(c) for c in df.columns]
-    return df
-
-
 def tratar_dataframe(df):
+    # se vier TXT do Railway, ainda não temos tabela estruturada
+    if list(df.columns) == ["linha"]:
+        print("RELATORIO_TXT_DETECTADO", flush=True)
+        print(df.head(30).to_string(), flush=True)
+        raise Exception(
+            "O relatório no Railway está vindo em formato texto. "
+            "Agora precisamos usar o conteúdo logado para montar o parser final."
+        )
+
     df = limpar_colunas(df)
 
-    # remove colunas inúteis tipo unnamed
+    # remove colunas inúteis
     df = df.loc[:, ~df.columns.str.startswith("unnamed")].copy()
 
     colunas_tabela = [
@@ -130,19 +147,14 @@ def tratar_dataframe(df):
     if "cotacao" not in df.columns:
         raise Exception(f"Coluna 'cotacao' não encontrada. Colunas atuais: {list(df.columns)}")
 
-    # remove linhas sem cotacao
     df = df[df["cotacao"].notna()].copy()
-
-    # cotacao como texto para casar com a PK
     df["cotacao"] = df["cotacao"].astype(str).str.strip()
     df = df[df["cotacao"] != ""].copy()
 
-    # datas
     for col in ["data_hora_inclusao", "data_emissao_ctrc"]:
         if col in df.columns:
             df[col] = pd.to_datetime(df[col], errors="coerce", dayfirst=True)
 
-    # força texto nas outras colunas do arquivo
     for col in colunas_tabela:
         if col in df.columns and col not in ["data_hora_inclusao", "data_emissao_ctrc"]:
             df[col] = df[col].apply(lambda x: None if pd.isna(x) else str(x).strip())
@@ -163,6 +175,10 @@ def tratar_dataframe(df):
             df[c] = None
 
     df = df[colunas_finais].copy()
+
+    print("COLUNAS_LIDAS:", df.columns.tolist(), flush=True)
+    print("HEAD_DF:", flush=True)
+    print(df.head(20).to_string(), flush=True)
 
     return df
 
