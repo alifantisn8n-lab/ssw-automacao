@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime
 from pathlib import Path
 from io import StringIO
+from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
@@ -153,7 +154,7 @@ def abrir_tela_2(page, context):
 
 
 def preencher_tela_2(page):
-    hoje = datetime.now()
+    hoje = datetime.now(ZoneInfo("America/Sao_Paulo"))
     data_inicial = hoje.replace(day=1).strftime("%d%m%y")
     data_final = hoje.strftime("%d%m%y")
 
@@ -196,6 +197,10 @@ def preencher_tela_2(page):
     campo_data_fim.fill("")
     campo_data_fim.type(data_final, delay=100)
 
+    print(
+        f"PERIODO_PREENCHIDO: {data_inicial} até {data_final}",
+        flush=True
+    )
 
 def clicar_play_final(page):
     js = """
