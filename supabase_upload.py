@@ -8,7 +8,7 @@ from supabase import create_client
 load_dotenv()
 
 
-def _clean_env(name: str) -> str | None:
+def _clean_env(name: str):
     value = os.getenv(name)
     if value is None:
         return None
@@ -28,9 +28,6 @@ print(
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("SUPABASE_URL e SUPABASE_KEY precisam estar definidos")
-
-if not SUPABASE_URL.startswith("https://"):
-    raise ValueError(f"SUPABASE_URL inválida: {SUPABASE_URL!r}")
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -80,89 +77,89 @@ def limpar_colunas(df):
 def tratar_dataframe(df):
     df = limpar_colunas(df)
 
+    # remove colunas inúteis tipo unnamed
     df = df.loc[:, ~df.columns.str.startswith("unnamed")].copy()
 
-    mapa = {
-        "cotacao": "cotacao",
-        "data_hora_inclusao": "data_hora_inclusao",
-        "usuario_inclusao": "usuario_inclusao",
-        "cnpj_pagador": "cnpj_cpf_pagador",
-        "nome_pagador": "nome_pagador",
-        "origem": "origem",
-        "destino": "destino",
-        "tipo_frete": "tipo_frete",
-        "situacao": "situacao",
-        "proposta_atual": "proposta_atual",
-        "frete_ntc": "frete_ntc",
-        "validade": "validade",
-        "ctrc": "ctrc",
-        "observacao": "observacoes",
-    }
-
-    renomear = {}
-    for col in df.columns:
-        if col in mapa:
-            renomear[col] = mapa[col]
-
-    df = df.rename(columns=renomear)
+    colunas_tabela = [
+        "cotacao",
+        "unidade_inclusao",
+        "usuario_inclusao",
+        "cnpj_pagador",
+        "nome_pagador",
+        "abc",
+        "vendedor",
+        "origem",
+        "praca_coleta",
+        "praca_comercial",
+        "destino",
+        "cnpj_destinatario",
+        "nome_destinatario",
+        "ed",
+        "tipo_frete",
+        "mercadoria",
+        "valor_nf",
+        "qtd_volumes",
+        "qtd_pares",
+        "peso",
+        "cubagem",
+        "peso_calculo",
+        "frete_ntc",
+        "proposta_inicial",
+        "proposta_atual",
+        "desc_ntc",
+        "rc",
+        "desc_inicial",
+        "tabela_de_calculo",
+        "observacao",
+        "data_hora_inclusao",
+        "validade",
+        "situacao",
+        "ctrc",
+        "data_emissao_ctrc",
+        "frete_ctrc",
+        "relatorio_comissao",
+        "unidade_responsavel",
+        "usuario_alteracao",
+        "contato",
+        "autorizado",
+    ]
 
     if "cotacao" not in df.columns:
         raise Exception(f"Coluna 'cotacao' não encontrada. Colunas atuais: {list(df.columns)}")
 
+    # remove linhas sem cotacao
     df = df[df["cotacao"].notna()].copy()
 
-    df["cotacao"] = pd.to_numeric(df["cotacao"], errors="coerce")
-    df = df[df["cotacao"].notna()].copy()
-    df["cotacao"] = df["cotacao"].astype(int)
+    # cotacao como texto para casar com a PK
+    df["cotacao"] = df["cotacao"].astype(str).str.strip()
+    df = df[df["cotacao"] != ""].copy()
 
-    for col in ["proposta_atual", "frete_ntc"]:
+    # datas
+    for col in ["data_hora_inclusao", "data_emissao_ctrc"]:
         if col in df.columns:
-            df[col] = (
-                df[col]
-                .astype(str)
-                .str.replace(".", "", regex=False)
-                .str.replace(",", ".", regex=False)
-                .str.strip()
-            )
-            df[col] = pd.to_numeric(df[col], errors="coerce")
+            df[col] = pd.to_datetime(df[col], errors="coerce", dayfirst=True)
 
-    if "data_hora_inclusao" in df.columns:
-        df["data_hora_inclusao"] = pd.to_datetime(
-            df["data_hora_inclusao"],
-            errors="coerce",
-            dayfirst=True
-        )
+    # força texto nas outras colunas do arquivo
+    for col in colunas_tabela:
+        if col in df.columns and col not in ["data_hora_inclusao", "data_emissao_ctrc"]:
+            df[col] = df[col].apply(lambda x: None if pd.isna(x) else str(x).strip())
 
     agora = datetime.now()
     df["mes_referencia"] = agora.replace(day=1).date()
     df["data_extracao"] = agora
     df["updated_at"] = agora
 
-    colunas_tabela = [
-        "cotacao",
-        "data_hora_inclusao",
-        "usuario_inclusao",
-        "cnpj_cpf_pagador",
-        "nome_pagador",
-        "origem",
-        "destino",
-        "tipo_frete",
-        "situacao",
-        "proposta_atual",
-        "frete_ntc",
-        "validade",
-        "ctrc",
-        "observacoes",
+    colunas_finais = colunas_tabela + [
         "mes_referencia",
         "data_extracao",
         "updated_at",
     ]
 
-    for c in colunas_tabela:
+    for c in colunas_finais:
         if c not in df.columns:
             df[c] = None
 
-    df = df[colunas_tabela].copy()
+    df = df[colunas_finais].copy()
 
     return df
 
@@ -170,34 +167,19 @@ def tratar_dataframe(df):
 def enviar_para_supabase(df):
     df = df.copy()
 
-    colunas_data = ["data_hora_inclusao", "mes_referencia", "data_extracao", "updated_at"]
+    colunas_data = [
+        "data_hora_inclusao",
+        "data_emissao_ctrc",
+        "mes_referencia",
+        "data_extracao",
+        "updated_at",
+    ]
+
     for col in colunas_data:
         if col in df.columns:
             df[col] = df[col].apply(
                 lambda x: x.isoformat() if pd.notnull(x) and hasattr(x, "isoformat") else None
             )
-
-    colunas_texto = [
-        "usuario_inclusao",
-        "cnpj_cpf_pagador",
-        "nome_pagador",
-        "origem",
-        "destino",
-        "tipo_frete",
-        "situacao",
-        "validade",
-        "ctrc",
-        "observacoes",
-    ]
-
-    for col in colunas_texto:
-        if col in df.columns:
-            df[col] = df[col].apply(lambda x: None if pd.isna(x) else str(x).strip())
-
-    colunas_numericas = ["cotacao", "proposta_atual", "frete_ntc"]
-    for col in colunas_numericas:
-        if col in df.columns:
-            df[col] = df[col].apply(lambda x: None if pd.isna(x) else x)
 
     registros = []
     for registro in df.to_dict(orient="records"):
