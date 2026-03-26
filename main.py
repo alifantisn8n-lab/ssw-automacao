@@ -269,19 +269,42 @@ def clicar_play_final(page):
 def gerar_relatorio(page):
     print("Gerando relatório...", flush=True)
 
-    with page.expect_download(timeout=60000) as download_info:
-        if not clicar_play_final(page):
-            raise Exception("Não consegui clicar no play final.")
+    antes = arquivos_na_pasta()
 
-    download = download_info.value
-    nome = download.suggested_filename or f"relatorio_{int(time.time())}.sswweb"
-    destino = DOWNLOAD_DIR / nome
+    # tentativa 1: download capturado pelo Playwright
+    try:
+        with page.expect_download(timeout=15000) as download_info:
+            if not clicar_play_final(page):
+                raise Exception("Não consegui clicar no play final.")
 
-    download.save_as(str(destino))
+        download = download_info.value
+        nome = download.suggested_filename or f"relatorio_{int(time.time())}.sswweb"
+        destino = DOWNLOAD_DIR / nome
+        download.save_as(str(destino))
 
-    print(f"OK - relatório salvo em: {destino}", flush=True)
+        print(f"OK - relatório salvo em: {destino}", flush=True)
+        return destino
 
-    return destino
+    except Exception as e:
+        print(f"Download por evento não capturado: {e}", flush=True)
+
+    # tentativa 2: arquivo apareceu na pasta
+    time.sleep(3)
+    arquivo = esperar_novo_arquivo(antes, timeout=30)
+    if arquivo:
+        print(f"OK - relatório salvo em: {arquivo}", flush=True)
+        return arquivo
+
+    # debug para entender o que aconteceu no Railway
+    try:
+        page.screenshot(path=str(DOWNLOAD_DIR / "erro_download.png"), full_page=True)
+        with open(DOWNLOAD_DIR / "erro_download.html", "w", encoding="utf-8") as f:
+            f.write(page.content())
+        print("Debug salvo: erro_download.png e erro_download.html", flush=True)
+    except Exception as debug_e:
+        print(f"Falha ao salvar debug: {debug_e}", flush=True)
+
+    raise Exception("Nenhum download foi capturado e nenhum arquivo apareceu na pasta downloads.")
 
 
 def processar_relatorio_e_enviar(arquivo):
