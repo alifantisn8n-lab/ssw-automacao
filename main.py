@@ -271,32 +271,32 @@ def gerar_relatorio(page):
 
     antes = arquivos_na_pasta()
 
-    # tentativa 1: download capturado pelo Playwright
+    clicou = clicar_play_final(page)
+    if not clicou:
+        raise Exception("Não consegui clicar no play final.")
+
+    # tenta capturar download do Playwright
     try:
         with page.expect_download(timeout=15000) as download_info:
-            if not clicar_play_final(page):
-                raise Exception("Não consegui clicar no play final.")
-
+            page.wait_for_timeout(2000)
         download = download_info.value
         nome = download.suggested_filename or f"relatorio_{int(time.time())}.sswweb"
         destino = DOWNLOAD_DIR / nome
         download.save_as(str(destino))
-
         print(f"OK - relatório salvo em: {destino}", flush=True)
         return destino
-
     except Exception as e:
         print(f"Download por evento não capturado: {e}", flush=True)
 
-    # tentativa 2: arquivo apareceu na pasta
-    time.sleep(3)
+    # espera arquivo aparecer na pasta
     arquivo = esperar_novo_arquivo(antes, timeout=30)
     if arquivo:
         print(f"OK - relatório salvo em: {arquivo}", flush=True)
         return arquivo
 
-    # debug para entender o que aconteceu no Railway
+    # tenta descobrir se abriu nova aba/janela ou mudou a tela
     try:
+        print("URL atual após clique:", page.url, flush=True)
         page.screenshot(path=str(DOWNLOAD_DIR / "erro_download.png"), full_page=True)
         with open(DOWNLOAD_DIR / "erro_download.html", "w", encoding="utf-8") as f:
             f.write(page.content())
