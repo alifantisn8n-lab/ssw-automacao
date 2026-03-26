@@ -33,7 +33,10 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 def ler_relatorio(arquivo):
+    arquivo = str(arquivo)
+
     tentativas = [
+        {"sep": ";", "encoding": "utf-8-sig"},
         {"sep": ";", "encoding": "latin1"},
         {"sep": ";", "encoding": "utf-8"},
         {"sep": ",", "encoding": "latin1"},

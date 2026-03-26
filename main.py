@@ -1,5 +1,6 @@
 import os
 import time
+import pandas as pd
 from datetime import datetime
 from pathlib import Path
 
@@ -269,16 +270,32 @@ def clicar_play_final(page):
 def gerar_relatorio(page):
     print("Gerando relatório...", flush=True)
 
-    antes = arquivos_na_pasta()
-
     clicou = clicar_play_final(page)
     if not clicou:
         raise Exception("Não consegui clicar no play final.")
 
-    # espera o SSW processar e baixar
     time.sleep(8)
 
-    arquivo = esperar_novo_arquivo(antes, timeout=40)
+    # caso 1: abriu a página HTML do relatório
+    if "ssw1601" in page.url.lower():
+        print(f"Relatório abriu em HTML: {page.url}", flush=True)
+
+        html = page.content()
+        tabelas = pd.read_html(html)
+
+        if not tabelas:
+            raise Exception("A página abriu, mas nenhuma tabela foi encontrada no HTML do relatório.")
+
+        df_html = tabelas[0]
+        destino = DOWNLOAD_DIR / f"relatorio_{int(time.time())}.csv"
+        df_html.to_csv(destino, sep=";", index=False, encoding="utf-8-sig")
+
+        print(f"OK - relatório salvo em HTML convertido para CSV: {destino}", flush=True)
+        return destino
+
+    # caso 2: ainda pode aparecer arquivo físico
+    antes = arquivos_na_pasta()
+    arquivo = esperar_novo_arquivo(antes, timeout=20)
     if arquivo:
         print(f"OK - relatório salvo em: {arquivo}", flush=True)
         return arquivo
@@ -292,7 +309,7 @@ def gerar_relatorio(page):
     except Exception as e:
         print(f"Falha ao salvar debug: {e}", flush=True)
 
-    raise Exception("Nenhum arquivo apareceu na pasta downloads após clicar no play final.")
+    raise Exception("Nenhum relatório foi encontrado após clicar no play final.")
 
 
 def processar_relatorio_e_enviar(arquivo):
