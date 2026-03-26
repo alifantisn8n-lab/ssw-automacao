@@ -275,36 +275,24 @@ def gerar_relatorio(page):
     if not clicou:
         raise Exception("Não consegui clicar no play final.")
 
-    # tenta capturar download do Playwright
-    try:
-        with page.expect_download(timeout=15000) as download_info:
-            page.wait_for_timeout(2000)
-        download = download_info.value
-        nome = download.suggested_filename or f"relatorio_{int(time.time())}.sswweb"
-        destino = DOWNLOAD_DIR / nome
-        download.save_as(str(destino))
-        print(f"OK - relatório salvo em: {destino}", flush=True)
-        return destino
-    except Exception as e:
-        print(f"Download por evento não capturado: {e}", flush=True)
+    # espera o SSW processar e baixar
+    time.sleep(8)
 
-    # espera arquivo aparecer na pasta
-    arquivo = esperar_novo_arquivo(antes, timeout=30)
+    arquivo = esperar_novo_arquivo(antes, timeout=40)
     if arquivo:
         print(f"OK - relatório salvo em: {arquivo}", flush=True)
         return arquivo
 
-    # tenta descobrir se abriu nova aba/janela ou mudou a tela
     try:
         print("URL atual após clique:", page.url, flush=True)
         page.screenshot(path=str(DOWNLOAD_DIR / "erro_download.png"), full_page=True)
         with open(DOWNLOAD_DIR / "erro_download.html", "w", encoding="utf-8") as f:
             f.write(page.content())
         print("Debug salvo: erro_download.png e erro_download.html", flush=True)
-    except Exception as debug_e:
-        print(f"Falha ao salvar debug: {debug_e}", flush=True)
+    except Exception as e:
+        print(f"Falha ao salvar debug: {e}", flush=True)
 
-    raise Exception("Nenhum download foi capturado e nenhum arquivo apareceu na pasta downloads.")
+    raise Exception("Nenhum arquivo apareceu na pasta downloads após clicar no play final.")
 
 
 def processar_relatorio_e_enviar(arquivo):
