@@ -55,13 +55,38 @@ def limpar_colunas(df):
 def ler_relatorio(arquivo):
     arquivo = str(arquivo)
 
-    # caso do Railway: relatório virou texto
+    # Caso Railway: relatório veio como texto
     if arquivo.lower().endswith(".txt"):
         with open(arquivo, "r", encoding="utf-8") as f:
             linhas = [l.strip() for l in f.readlines() if l.strip()]
 
-        df = pd.DataFrame({"linha": linhas})
-        return df
+        dados = []
+
+        for linha in linhas:
+            if (
+                "Cotações já cadastradas" in linha
+                or "Usuário" in linha
+                or "CNPJ pagador" in linha
+                or "Período" in linha
+                or "Tipo de frete" in linha
+                or "Situação" in linha
+                or "Domínio" in linha
+                or "OBSERVAÇÕES" in linha
+                or linha in ["►", "×"]
+            ):
+                continue
+
+            partes = linha.split()
+
+            if len(partes) > 5 and partes[0].isdigit():
+                dados.append(linha)
+
+        print(f"LINHAS_VALIDAS: {len(dados)}", flush=True)
+        print("AMOSTRA_LINHAS_VALIDAS:", flush=True)
+        for linha in dados[:15]:
+            print(linha, flush=True)
+
+        return pd.DataFrame({"linha": dados})
 
     tentativas = [
         {"sep": ";", "encoding": "utf-8-sig"},
@@ -86,18 +111,16 @@ def ler_relatorio(arquivo):
 
 
 def tratar_dataframe(df):
-    # se vier TXT do Railway, ainda não temos tabela estruturada
+    # Se veio TXT do Railway, ainda estamos na fase de descobrir o formato final
     if list(df.columns) == ["linha"]:
         print("RELATORIO_TXT_DETECTADO", flush=True)
         print(df.head(30).to_string(), flush=True)
         raise Exception(
-            "O relatório no Railway está vindo em formato texto. "
-            "Agora precisamos usar o conteúdo logado para montar o parser final."
+            "RELATORIO_TXT_DETECTADO: agora precisamos montar o parser final "
+            "a partir das linhas válidas logadas."
         )
 
     df = limpar_colunas(df)
-
-    # remove colunas inúteis
     df = df.loc[:, ~df.columns.str.startswith("unnamed")].copy()
 
     colunas_tabela = [
