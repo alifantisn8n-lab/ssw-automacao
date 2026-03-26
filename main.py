@@ -277,57 +277,36 @@ def gerar_relatorio(page):
 
     time.sleep(8)
 
-    # caso 1: abriu a página HTML do relatório
     if "ssw1601" in page.url.lower():
         print(f"Relatório abriu em HTML: {page.url}", flush=True)
 
-        html = page.content()
-
-        # salva debug sempre que cair nesse modo
-        with open(DOWNLOAD_DIR / "relatorio_html_debug.html", "w", encoding="utf-8") as f:
-            f.write(html)
-        print("HTML salvo em relatorio_html_debug.html", flush=True)
-
-        try:
-            tabelas = pd.read_html(StringIO(html))
-            if tabelas:
-                df_html = tabelas[0]
-                destino = DOWNLOAD_DIR / f"relatorio_{int(time.time())}.csv"
-                df_html.to_csv(destino, sep=";", index=False, encoding="utf-8-sig")
-                print(f"OK - relatório salvo em HTML convertido para CSV: {destino}", flush=True)
-                return destino
-        except Exception as e:
-            print(f"Falha ao ler HTML com pandas: {e}", flush=True)
-
-        # fallback: tentar pegar texto da página
         texto = page.locator("body").inner_text()
-        with open(DOWNLOAD_DIR / "relatorio_html_debug.txt", "w", encoding="utf-8") as f:
+        destino = DOWNLOAD_DIR / f"relatorio_{int(time.time())}.txt"
+
+        with open(destino, "w", encoding="utf-8") as f:
             f.write(texto)
-        print("Texto salvo em relatorio_html_debug.txt", flush=True)
 
-        raise Exception("A página do relatório abriu, mas nenhuma tabela HTML foi encontrada.")
+        print(f"OK - relatório salvo em texto: {destino}", flush=True)
+        print("INICIO_TEXTO_RELATORIO", flush=True)
+        print(texto[:4000], flush=True)
+        print("FIM_TEXTO_RELATORIO", flush=True)
 
-    # caso 2: apareceu arquivo físico
+        return destino
+
     antes = arquivos_na_pasta()
     arquivo = esperar_novo_arquivo(antes, timeout=20)
     if arquivo:
         print(f"OK - relatório salvo em: {arquivo}", flush=True)
         return arquivo
 
-    try:
-        print("URL atual após clique:", page.url, flush=True)
-        page.screenshot(path=str(DOWNLOAD_DIR / "erro_download.png"), full_page=True)
-        with open(DOWNLOAD_DIR / "erro_download.html", "w", encoding="utf-8") as f:
-            f.write(page.content())
-        print("Debug salvo: erro_download.png e erro_download.html", flush=True)
-    except Exception as e:
-        print(f"Falha ao salvar debug: {e}", flush=True)
-
     raise Exception("Nenhum relatório foi encontrado após clicar no play final.")
 
 def processar_relatorio_e_enviar(arquivo):
     log("Lendo relatório...")
     df = ler_relatorio(arquivo)
+    print("COLUNAS_LIDAS:", df.columns.tolist(), flush=True)
+print("HEAD_DF:", flush=True)
+print(df.head(20).to_string(), flush=True)
 
     log("Tratando dados...")
     df = tratar_dataframe(df)
