@@ -267,18 +267,21 @@ def clicar_play_final(page):
 
 
 def gerar_relatorio(page):
-    antes = arquivos_na_pasta()
+    print("Gerando relatório...", flush=True)
 
-    if not clicar_play_final(page):
-        raise Exception("Não consegui clicar no play final.")
+    with page.expect_download(timeout=60000) as download_info:
+        if not clicar_play_final(page):
+            raise Exception("Não consegui clicar no play final.")
 
-    time.sleep(2)
+    download = download_info.value
+    nome = download.suggested_filename or f"relatorio_{int(time.time())}.sswweb"
+    destino = DOWNLOAD_DIR / nome
 
-    arquivo = esperar_novo_arquivo(antes, timeout=60)
-    if not arquivo:
-        raise Exception("Nenhum arquivo apareceu na pasta downloads.")
+    download.save_as(str(destino))
 
-    return arquivo
+    print(f"OK - relatório salvo em: {destino}", flush=True)
+
+    return destino
 
 
 def processar_relatorio_e_enviar(arquivo):
