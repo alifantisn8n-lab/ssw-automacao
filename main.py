@@ -277,6 +277,7 @@ def gerar_relatorio(page):
 
     time.sleep(8)
 
+    # Caso Railway: relatório abre como página de texto/html
     if "ssw1601" in page.url.lower():
         print(f"Relatório abriu em HTML: {page.url}", flush=True)
 
@@ -293,20 +294,28 @@ def gerar_relatorio(page):
 
         return destino
 
+    # Caso local: pode baixar arquivo físico
     antes = arquivos_na_pasta()
     arquivo = esperar_novo_arquivo(antes, timeout=20)
     if arquivo:
         print(f"OK - relatório salvo em: {arquivo}", flush=True)
         return arquivo
 
+    try:
+        print("URL atual após clique:", page.url, flush=True)
+        page.screenshot(path=str(DOWNLOAD_DIR / "erro_download.png"), full_page=True)
+        with open(DOWNLOAD_DIR / "erro_download.html", "w", encoding="utf-8") as f:
+            f.write(page.content())
+        print("Debug salvo: erro_download.png e erro_download.html", flush=True)
+    except Exception as e:
+        print(f"Falha ao salvar debug: {e}", flush=True)
+
     raise Exception("Nenhum relatório foi encontrado após clicar no play final.")
+
 
 def processar_relatorio_e_enviar(arquivo):
     log("Lendo relatório...")
     df = ler_relatorio(arquivo)
-    print("COLUNAS_LIDAS:", df.columns.tolist(), flush=True)
-print("HEAD_DF:", flush=True)
-print(df.head(20).to_string(), flush=True)
 
     log("Tratando dados...")
     df = tratar_dataframe(df)
@@ -317,8 +326,6 @@ print(df.head(20).to_string(), flush=True)
     enviar_para_supabase(df)
 
     log("OK - dados enviados para o Supabase")
-
-
 def main():
     with sync_playwright() as p:
         browser = p.chromium.launch(
