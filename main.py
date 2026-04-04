@@ -1,13 +1,11 @@
 import os
 import time
-import pandas as pd
 from datetime import datetime
 from pathlib import Path
-from io import StringIO
 from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
 from supabase_upload import ler_relatorio, tratar_dataframe, enviar_para_supabase
 
@@ -28,28 +26,13 @@ def log(msg):
     print(msg, flush=True)
 
 
-def arquivos_na_pasta():
-    return {p.name: p.stat().st_mtime for p in DOWNLOAD_DIR.glob("*") if p.is_file()}
-
-
-def esperar_novo_arquivo(antes, timeout=60):
-    inicio = time.time()
-    while time.time() - inicio < timeout:
-        atuais = arquivos_na_pasta()
-        novos = [nome for nome in atuais if nome not in antes]
-        if novos:
-            novos.sort(key=lambda n: atuais[n], reverse=True)
-            return DOWNLOAD_DIR / novos[0]
-        time.sleep(1)
-    return None
-
-
 def registrar_dialogos(page):
     def on_dialog(dialog):
         try:
             dialog.accept()
         except Exception:
             pass
+
     page.on("dialog", on_dialog)
 
 
@@ -182,6 +165,7 @@ def preencher_tela_2(page):
     campo_data_ini = campos[9]
     campo_data_fim = campos[10]
 
+    # E = excel/csv exportável
     campo_listar.fill("")
     campo_listar.type("E", delay=100)
 
@@ -197,12 +181,10 @@ def preencher_tela_2(page):
     campo_data_fim.fill("")
     campo_data_fim.type(data_final, delay=100)
 
-    print(
-        f"PERIODO_PREENCHIDO: {data_inicial} até {data_final}",
-        flush=True
-    )
+    print(f"PERIODO_PREENCHIDO: {data_inicial} até {data_final}", flush=True)
 
-def clicar_play_final(page):
+
+def localizar_alvo_play(page):
     js = """
     () => {
         function visible(el) {
@@ -254,8 +236,11 @@ def clicar_play_final(page):
         return candidatos.length ? candidatos[0] : null;
     }
     """
+    return page.evaluate(js)
 
-    alvo = page.evaluate(js)
+
+def clicar_play_final(page):
+    alvo = localizar_alvo_play(page)
 
     if alvo:
         page.mouse.click(alvo["x"], alvo["y"])
@@ -274,46 +259,54 @@ def clicar_play_final(page):
 
 
 def gerar_relatorio(page):
-    print("Gerando relatório...", flush=True)
-
-    clicou = clicar_play_final(page)
-    if not clicou:
-        raise Exception("Não consegui clicar no play final.")
-
-    time.sleep(8)
-
-    # Caso Railway: relatório abre como página de texto/html
-    if "ssw1601" in page.url.lower():
-        print(f"Relatório abriu em HTML: {page.url}", flush=True)
-
-        texto = page.locator("body").inner_text()
-        destino = DOWNLOAD_DIR / f"relatorio_{int(time.time())}.txt"
-
-        with open(destino, "w", encoding="utf-8") as f:
-            f.write(texto)
-
-        print(f"OK - relatório salvo em texto: {destino}", flush=True)
-        print("INICIO_TEXTO_RELATORIO", flush=True)
-        print(texto[:4000], flush=True)
-        print("FIM_TEXTO_RELATORIO", flush=True)
-
-        return destino
-
-    # Caso local: pode baixar arquivo físico
-    antes = arquivos_na_pasta()
-    arquivo = esperar_novo_arquivo(antes, timeout=20)
-    if arquivo:
-        print(f"OK - relatório salvo em: {arquivo}", flush=True)
-        return arquivo
+    log("Gerando relatório e aguardando download...")
 
     try:
-        print("URL atual após clique:", page.url, flush=True)
+        with page.expect_download(timeout=90000) as download_info:
+            clicou = clicar_play_final(page)
+            if not clicou:
+                raise Exception("Não consegui clicar no play final.")
+
+        download = download_info.value
+
+        suggested = download.suggested_filename or f"relatorio_{int(time.time())}.csv"
+        extensao = Path(suggested).suffix.lower()
+
+        if not extensao:
+            extensao = ".csv"
+
+        destino = DOWNLOAD_DIR / f"relatorio_{int(time.time())}{extensao}"
+        download.save_as(str(destino))
+
+        log(f"OK - download capturado: {destino}")
+        return destino
+
+    except PlaywrightTimeoutError:
+        log("Nenhum download foi capturado no tempo esperado.")
+    except Exception as e:
+        log(f"Falha ao capturar download: {e}")
+
+    # fallback de emergência: tentar encontrar arquivo baixado diretamente
+    time.sleep(5)
+    arquivos = sorted(
+        [p for p in DOWNLOAD_DIR.glob("*") if p.is_file()],
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+    if arquivos:
+        mais_recente = arquivos[0]
+        log(f"Usando arquivo mais recente da pasta downloads: {mais_recente}")
+        return mais_recente
+
+    # debug final
+    try:
+        log(f"URL atual após tentativa: {page.url}")
         page.screenshot(path=str(DOWNLOAD_DIR / "erro_download.png"), full_page=True)
         with open(DOWNLOAD_DIR / "erro_download.html", "w", encoding="utf-8") as f:
             f.write(page.content())
-        print("Debug salvo: erro_download.png e erro_download.html", flush=True)
+        log("Debug salvo: erro_download.png e erro_download.html")
     except Exception as e:
-        print(f"Falha ao salvar debug: {e}", flush=True)
+        log(f"Falha ao salvar debug: {e}")
 
     raise Exception("Nenhum relatório foi encontrado após clicar no play final.")
 
@@ -322,8 +315,14 @@ def processar_relatorio_e_enviar(arquivo):
     log("Lendo relatório...")
     df = ler_relatorio(arquivo)
 
+    if df is None or len(df) == 0:
+        raise Exception(f"Arquivo lido sem dados: {arquivo}")
+
     log("Tratando dados...")
     df = tratar_dataframe(df)
+
+    if df is None or len(df) == 0:
+        raise Exception(f"DataFrame tratado ficou vazio: {arquivo}")
 
     log(f"Total de registros para envio: {len(df)}")
 
@@ -331,10 +330,12 @@ def processar_relatorio_e_enviar(arquivo):
     enviar_para_supabase(df)
 
     log("OK - dados enviados para o Supabase")
+
+
 def main():
     with sync_playwright() as p:
         browser = p.chromium.launch(
-            headless=True,
+            headless=HEADLESS,
             slow_mo=200,
             downloads_path=str(DOWNLOAD_DIR)
         )
@@ -364,9 +365,7 @@ def main():
             log("Preenchendo Tela 2...")
             preencher_tela_2(tela2)
 
-            log("Gerando relatório...")
             arquivo = gerar_relatorio(tela2)
-
             log(f"OK - relatório salvo em: {arquivo}")
 
             processar_relatorio_e_enviar(arquivo)

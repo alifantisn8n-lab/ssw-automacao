@@ -1,0 +1,10 @@
+.env
+downloads/
+__pycache__/
+*.png
+*.html
+*.txt
+*.csv
+*.sswweb
+*.xlsx
+*.log

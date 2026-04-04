@@ -1,33 +1,46 @@
 import os
+import socket
 from datetime import datetime
+from pathlib import Path
+from urllib.parse import urlparse
 
 import pandas as pd
 from dotenv import load_dotenv
 from supabase import create_client
 
-load_dotenv()
+ENV_PATH = Path(__file__).with_name(".env")
+load_dotenv(dotenv_path=ENV_PATH, override=True)
 
 
 def _clean_env(name: str):
     value = os.getenv(name)
     if value is None:
         return None
-    value = value.strip()
+    value = value.strip().strip('"').strip("'")
     return value if value else None
 
 
 SUPABASE_URL = _clean_env("SUPABASE_URL")
 SUPABASE_KEY = _clean_env("SUPABASE_KEY")
 
+print("ENV_PATH_USADO:", ENV_PATH, flush=True)
 print("SUPABASE_URL_DEBUG:", repr(SUPABASE_URL), flush=True)
-print(
-    "SUPABASE_KEY_PREFIX:",
-    SUPABASE_KEY[:20] if SUPABASE_KEY else None,
-    flush=True
-)
+print("SUPABASE_KEY_PREFIX:", SUPABASE_KEY[:20] if SUPABASE_KEY else None, flush=True)
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("SUPABASE_URL e SUPABASE_KEY precisam estar definidos")
+
+host = urlparse(SUPABASE_URL).netloc
+print("SUPABASE_HOST_EXTRAIDO:", repr(host), flush=True)
+
+try:
+    ip = socket.gethostbyname(host)
+    print("DNS_OK_IP:", ip, flush=True)
+except Exception as e:
+    raise Exception(
+        f"DNS_FALHOU para host {host}. "
+        f"Confira SUPABASE_URL no .env. Erro real: {e}"
+    )
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -53,75 +66,82 @@ def limpar_colunas(df):
 
 
 def ler_relatorio(arquivo):
-    arquivo = str(arquivo)
+    caminho = Path(str(arquivo))
+    ext = caminho.suffix.lower()
 
-    # Caso Railway: relatório veio como texto
-    if arquivo.lower().endswith(".txt"):
-        with open(arquivo, "r", encoding="utf-8") as f:
-            linhas = [l.strip() for l in f.readlines() if l.strip()]
+    print(f"ARQUIVO_RECEBIDO: {caminho}", flush=True)
+    print(f"EXTENSAO_DETECTADA: {ext}", flush=True)
 
-        dados = []
+    # 1) Excel real
+    if ext in [".xlsx", ".xls"]:
+        df = pd.read_excel(caminho, dtype=str)
+        print(f"LINHAS_LIDAS_EXCEL: {len(df)}", flush=True)
+        print(f"COLUNAS_EXCEL: {list(df.columns)}", flush=True)
+        return df
 
-        for linha in linhas:
-            if (
-                "Cotações já cadastradas" in linha
-                or "Usuário" in linha
-                or "CNPJ pagador" in linha
-                or "Período" in linha
-                or "Tipo de frete" in linha
-                or "Situação" in linha
-                or "Domínio" in linha
-                or "OBSERVAÇÕES" in linha
-                or linha in ["►", "×"]
-            ):
-                continue
+    # 2) CSV / TXT / exportações texto do SSW
+    if ext in [".csv", ".txt", ".sswweb", ".xml", ""]:
+        tentativas = [
+            {"sep": ";", "encoding": "utf-8-sig"},
+            {"sep": ";", "encoding": "latin1"},
+            {"sep": ";", "encoding": "utf-8"},
+            {"sep": ",", "encoding": "utf-8-sig"},
+            {"sep": ",", "encoding": "latin1"},
+            {"sep": ",", "encoding": "utf-8"},
+            {"sep": "\t", "encoding": "utf-8-sig"},
+            {"sep": "\t", "encoding": "latin1"},
+            {"sep": "|", "encoding": "utf-8-sig"},
+            {"sep": "|", "encoding": "latin1"},
+        ]
 
-            partes = linha.split()
+        ultimo_erro = None
 
-            if len(partes) > 5 and partes[0].isdigit():
-                dados.append(linha)
+        for cfg in tentativas:
+            try:
+                print(f"TENTANDO_LER_CSV: {cfg}", flush=True)
+                df = pd.read_csv(caminho, dtype=str, **cfg)
 
-        print(f"LINHAS_VALIDAS: {len(dados)}", flush=True)
-        print("AMOSTRA_LINHAS_VALIDAS:", flush=True)
-        for linha in dados[:15]:
-            print(linha, flush=True)
+                # válido quando realmente dividiu em colunas
+                if len(df.columns) > 1:
+                    print(f"LEITURA_OK_COM: {cfg}", flush=True)
+                    print(f"LINHAS_LIDAS: {len(df)}", flush=True)
+                    print(f"COLUNAS_LIDAS: {list(df.columns)}", flush=True)
+                    return df
+            except Exception as e:
+                ultimo_erro = e
 
-        return pd.DataFrame({"linha": dados})
-
-    tentativas = [
-        {"sep": ";", "encoding": "utf-8-sig"},
-        {"sep": ";", "encoding": "latin1"},
-        {"sep": ";", "encoding": "utf-8"},
-        {"sep": ",", "encoding": "latin1"},
-        {"sep": ",", "encoding": "utf-8"},
-        {"sep": "\t", "encoding": "latin1"},
-    ]
-
-    ultimo_erro = None
-
-    for cfg in tentativas:
+        # fallback: tenta detectar se é arquivo de uma coluna só mas com cabeçalho útil
         try:
-            df = pd.read_csv(arquivo, **cfg)
-            if len(df.columns) > 1:
-                return df
+            df = pd.read_csv(caminho, dtype=str, encoding="utf-8-sig")
+            print("FALLBACK_UTF8_SIG_EXECUTADO", flush=True)
+            print(f"COLUNAS_FALLBACK: {list(df.columns)}", flush=True)
+            return df
         except Exception as e:
             ultimo_erro = e
 
-    raise Exception(f"Não consegui ler o arquivo {arquivo}. Erro: {ultimo_erro}")
+        try:
+            df = pd.read_csv(caminho, dtype=str, encoding="latin1")
+            print("FALLBACK_LATIN1_EXECUTADO", flush=True)
+            print(f"COLUNAS_FALLBACK: {list(df.columns)}", flush=True)
+            return df
+        except Exception as e:
+            ultimo_erro = e
+
+        raise Exception(f"Não consegui ler o arquivo {caminho}. Erro final: {ultimo_erro}")
+
+    raise Exception(f"Extensão não suportada para leitura: {caminho}")
 
 
 def tratar_dataframe(df):
-    # Se veio TXT do Railway, ainda estamos na fase de descobrir o formato final
-    if list(df.columns) == ["linha"]:
-        print("RELATORIO_TXT_DETECTADO", flush=True)
-        print(df.head(30).to_string(), flush=True)
-        raise Exception(
-            "RELATORIO_TXT_DETECTADO: agora precisamos montar o parser final "
-            "a partir das linhas válidas logadas."
-        )
+    if df is None or df.empty:
+        raise Exception("DataFrame vazio após leitura do relatório.")
 
     df = limpar_colunas(df)
     df = df.loc[:, ~df.columns.str.startswith("unnamed")].copy()
+
+    print("COLUNAS_NORMALIZADAS:", list(df.columns), flush=True)
+    print("HEAD_ORIGINAL:", flush=True)
+    print(df.head(10).to_string(), flush=True)
 
     colunas_tabela = [
         "cotacao",
@@ -167,20 +187,59 @@ def tratar_dataframe(df):
         "autorizado",
     ]
 
+    # mapa para ajustar nomes comuns do arquivo exportado
+    renomear = {
+        "cotação": "cotacao",
+        "cotacao": "cotacao",
+        "unidade_de_inclusao": "unidade_inclusao",
+        "usuario": "usuario_inclusao",
+        "usuario_de_inclusao": "usuario_inclusao",
+        "pagador": "nome_pagador",
+        "cnpj_do_pagador": "cnpj_pagador",
+        "nome_do_pagador": "nome_pagador",
+        "praça_coleta": "praca_coleta",
+        "praça_comercial": "praca_comercial",
+        "cnpj_do_destinatario": "cnpj_destinatario",
+        "nome_do_destinatario": "nome_destinatario",
+        "quantidade_volumes": "qtd_volumes",
+        "quantidade_pares": "qtd_pares",
+        "peso_cálculo": "peso_calculo",
+        "peso_calculo": "peso_calculo",
+        "frete_ntc_": "frete_ntc",
+        "proposta_inicial_": "proposta_inicial",
+        "proposta_atual_": "proposta_atual",
+        "descrição_ntc": "desc_ntc",
+        "descricao_ntc": "desc_ntc",
+        "descrição_inicial": "desc_inicial",
+        "descricao_inicial": "desc_inicial",
+        "tabela_de_cálculo": "tabela_de_calculo",
+        "tabela_de_calculo": "tabela_de_calculo",
+        "data_hora_de_inclusao": "data_hora_inclusao",
+        "data_emissão_ctrc": "data_emissao_ctrc",
+        "data_emissao_ctrc": "data_emissao_ctrc",
+        "frete_do_ctrc": "frete_ctrc",
+    }
+
+    df = df.rename(columns=renomear)
+
     if "cotacao" not in df.columns:
-        raise Exception(f"Coluna 'cotacao' não encontrada. Colunas atuais: {list(df.columns)}")
+        raise Exception(
+            f"Coluna 'cotacao' não encontrada. Colunas atuais: {list(df.columns)}"
+        )
 
     df = df[df["cotacao"].notna()].copy()
     df["cotacao"] = df["cotacao"].astype(str).str.strip()
     df = df[df["cotacao"] != ""].copy()
 
-    for col in ["data_hora_inclusao", "data_emissao_ctrc"]:
+    for col in ["data_hora_inclusao", "data_emissao_ctrc", "validade"]:
         if col in df.columns:
             df[col] = pd.to_datetime(df[col], errors="coerce", dayfirst=True)
 
     for col in colunas_tabela:
-        if col in df.columns and col not in ["data_hora_inclusao", "data_emissao_ctrc"]:
-            df[col] = df[col].apply(lambda x: None if pd.isna(x) else str(x).strip())
+        if col in df.columns and col not in ["data_hora_inclusao", "data_emissao_ctrc", "validade"]:
+            df[col] = df[col].apply(
+                lambda x: None if pd.isna(x) else str(x).strip()
+            )
 
     agora = datetime.now()
     df["mes_referencia"] = agora.replace(day=1).date()
@@ -199,8 +258,8 @@ def tratar_dataframe(df):
 
     df = df[colunas_finais].copy()
 
-    print("COLUNAS_LIDAS:", df.columns.tolist(), flush=True)
-    print("HEAD_DF:", flush=True)
+    print("COLUNAS_FINAIS:", df.columns.tolist(), flush=True)
+    print("HEAD_DF_TRATADO:", flush=True)
     print(df.head(20).to_string(), flush=True)
 
     return df
@@ -212,6 +271,7 @@ def enviar_para_supabase(df):
     colunas_data = [
         "data_hora_inclusao",
         "data_emissao_ctrc",
+        "validade",
         "mes_referencia",
         "data_extracao",
         "updated_at",
@@ -243,3 +303,5 @@ def enviar_para_supabase(df):
             lote,
             on_conflict="cotacao"
         ).execute()
+
+    print("UPLOAD_CONCLUIDO", flush=True)
